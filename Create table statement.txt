@@ -1,0 +1,210 @@
+CREATE TABLE Customer(
+Customer_id varchar2(10), 
+Email_id varchar2(20) NOT NULL,
+Fname varchar(10) NOT NULL,
+Lname varchar2(10) NOT NULL, 
+Phone int NOT NULL,
+Pass varchar2(8) NOT NULL, 
+Free_Nights int DEFAULT 0,
+Registration_Date date NOT NULL, 
+Communication_Pref varchar2(20), 
+Zip int NOT NULL, CHECK(zip BETWEEN 10000 AND 99999), 
+Country varchar2(20) NOT NULL,
+PRIMARY KEY(Customer_id)
+);
+
+CREATE TABLE Payment_type(
+Payment_id varchar2(10) NOT NULL,
+Customer_id varchar2(10) ,
+Payment_type varchar2(10) NOT NULL,
+PRIMARY KEY (Payment_id),
+FOREIGN KEY (Customer_id ) REFERENCES Customer(Customer_id ) ON DELETE CASCADE
+);
+
+CREATE TABLE Card(
+Payment_id varchar2(10) NOT NULL,
+Card_number varchar2(16) UNIQUE,
+Zip int NOT NULL,
+Country varchar2(10) NOT NULL,
+Expiration_month int NOT NULL,
+Expiration_year int NOT NULL,
+PRIMARY KEY (Payment_id),
+FOREIGN KEY (Payment_id) REFERENCES Payment_type(Payment_id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE Paypal(
+Payment_id varchar2(10),
+User_name varchar2(20) UNIQUE,
+PRIMARY KEY (Payment_id),
+FOREIGN KEY (Payment_id) REFERENCES Payment_type(Payment_id) ON DELETE CASCADE
+);
+
+CREATE TABLE Giftcard(
+Payment_id varchar2(10) ,
+Giftcard_no int UNIQUE,
+PRIMARY KEY (Payment_id),
+FOREIGN KEY (Payment_id) REFERENCES Payment_type(Payment_id) ON DELETE CASCADE
+);
+
+CREATE TABLE Hotels(
+Hotel_id varchar2(10),
+Tax_id varchar2(10) NOT NULL,
+Name varchar2(10) NOT NULL,
+Street varchar2(10) NOT NULL,
+City varchar2(10) NOT NULL,
+Province varchar2(10) NOT NULL,
+Zip varchar2(10) NOT NULL,
+Contact int NOT NULL,
+Rating int DEFAULT 0,
+Stars int NOT NULL,
+Group_name varchar2(10) ,
+Free_cancellation_days int,
+Mgr_ssn varchar2(10) UNIQUE,
+Mgr_name varchar2(50),
+PRIMARY KEY (Hotel_id),
+FOREIGN KEY (Tax_id ) REFERENCES Tax_percentage(Tax_id) ON DELETE SET NULL);
+
+CREATE TABLE Hotel_Amenities(
+Hotel_id varchar2(10),
+Hotel_amenity_id varchar2(10),
+Description varchar2(30),
+PRIMARY KEY (Hotel_id, Hotel_amenity_id ),
+FOREIGN KEY (Hotel_id) REFERENCES Hotels (Hotel_id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE Hotel_Photos(
+Hotel_id varchar2(10),
+Photo_id varchar2(10),
+Photo blob,
+PRIMARY KEY (Hotel_id, Photo_id),
+FOREIGN KEY (Hotel_id) REFERENCES Hotels(Hotel_id) ON DELETE CASCADE
+);
+
+CREATE TABLE Has_favourite(
+Customer_id varchar2(10),
+Hotel_id varchar2(10) ,
+PRIMARY KEY (Customer_id  , Hotel_id ),
+FOREIGN KEY (Customer_id ) REFERENCES Customer(Customer_id ) ON DELETE CASCADE ,
+FOREIGN KEY (Hotel_id ) REFERENCES Hotels(Hotel_id ) ON DELETE CASCADE 
+);
+
+
+CREATE TABLE Room_Type(
+Room_type_id varchar2(10),
+Hotel_id varchar2(10) NOT NULL,
+Accommodates int NOT NULL,
+Bed_choice char NOT NULL,
+Total_rooms int NOT NULL,
+Area int NOT NULL,
+Layout varchar2(10) NOT NULL,
+Accessibility varchar2(20) NOT NULL,
+Free_breakfast char NOT NULL,
+Practical varchar(20) NOT NULL,
+Bathrooms int NOT NULL,
+Comfort varchar2(20) NOT NULL,
+WiFi char NOT NULL ,
+Price int NOT NULL,
+Crib char NOT NULL ,
+Entertainment varchar(20) NOT NULL,
+Sofa char  NOT NULL,
+Extra_bed char NOT NULL ,
+Sleeps int NOT NULL,
+Food_drink char NOT NULL,
+Air_conditioner char NOT NULL,
+Smoking char NOT NULL,
+PRIMARY KEY (Room_type_id, Hotel_id),
+FOREIGN KEY (Hotel_id) REFERENCES Hotels(Hotel_id) ON DELETE CASCADE
+);
+
+CREATE TABLE Room_amenities(
+Room_type_id varchar2(10),
+Hotel_id varchar(10),
+Room_amenity_id varchar2(10),
+Description varchar2(50),
+PRIMARY KEY (Room_type_id, Hotel_id, Room_amenity_id ),
+FOREIGN KEY (Room_type_id, Hotel_id) REFERENCES Room_type (Room_type_id, Hotel_id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE Room(
+Room_no int,
+Room_type_id varchar(10),
+Hotel_id varchar(10),
+PRIMARY KEY (Room_no, Room_type_id, Hotel_id),
+FOREIGN KEY (Room_type_id, Hotel_id) REFERENCES Room_type (Room_type_id, Hotel_id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE Booking(
+Booking_id VARCHAR(10),
+Customer_id VARCHAR(10),
+Hotel_id VARCHAR(10),
+Payment_id VARCHAR(10),
+Room_type_id VARCHAR(10),
+Booking_date DATE NOT NULL,
+CheckIn_date DATE NOT NULL,
+CheckOut_date DATE NOT NULL,
+Quote_price INT NOT NULL,
+Completed CHAR NOT NULL,
+No_of_rooms int NOT NULL,
+PRIMARY KEY (Booking_id),
+FOREIGN KEY (Customer_id) REFERENCES Customer(Customer_id),
+FOREIGN KEY (Room_type_id, Hotel_id) REFERENCES Room_type (Room_type_id, Hotel_id) ON DELETE CASCADE,
+FOREIGN KEY (Payment_id) REFERENCES Payment_type(Payment_id) ON DELETE SET NULL 
+);
+
+
+
+
+CREATE TABLE Give_reviews_for(
+Customer_id varchar2(20),
+Hotel_id varchar2(20),
+Trip_type varchar2(10),
+Number_of_nights int,
+Comments varchar2(40),
+Rating int CHECK(Rating BETWEEN 1 AND 10) NOT NULL,
+Review_date date NOT NULL,
+PRIMARY KEY (Customer_id , Hotel_id),
+FOREIGN KEY (Customer_id ) REFERENCES Customer(Customer_id) ON DELETE CASCADE,
+FOREIGN KEY (Hotel_id ) REFERENCES Hotels(Hotel_id) ON DELETE CASCADE
+);
+
+CREATE TABLE Offers(
+Offer_id varchar2(10),
+Hotel_id varchar2(10),
+Description varchar2(40),
+Discount int NOT NULL,
+From_date date NOT NULL,
+To_date date NOT NULL,
+PRIMARY KEY (Offer_id ),
+FOREIGN KEY(Hotel_id ) REFERENCES  Hotels(Hotel_id) ON DELETE CASCADE);
+
+
+CREATE TABLE Places_to_visit(
+Name varchar2(20) NOT NULL,
+Street varchar2(100) NOT NULL,
+City varchar2(10) NOT NULL,
+Province varchar2(10) NOT NULL,
+Zip int NOT NULL,
+PRIMARY KEY (Name)
+);
+
+
+CREATE TABLE Hotels_around(
+Hotel_id varchar2(10),
+Name varchar2(20),
+Distance float NOT NULL,
+PRIMARY KEY (Hotel_id , Name),
+FOREIGN KEY (Hotel_id ) REFERENCES  Hotels(Hotel_id ) ON DELETE CASCADE,
+FOREIGN KEY (Name ) REFERENCES  Places_to_visit(Name ) ON DELETE CASCADE
+);
+
+CREATE TABLE tax_percentage(
+Tax_id varchar2(10) NOT NULL,
+Percentage float NOT NULL,
+State varchar2(20) NOT NULL,
+Country varchar2(20) NOT NULL,
+PRIMARY KEY (Tax_id )
+);
